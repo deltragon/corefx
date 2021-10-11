@@ -227,7 +227,8 @@ namespace System.Data
         /// <returns>An instance of LinkDataView.</returns>
         public static DataView AsDataView(this DataTable table)
         {
-            throw new PlatformNotSupportedException ();
+            DataSetUtil.CheckArgumentNull<DataTable>(table, "table");
+            return new LinqDataView(table, null);
         }
 
         /// <summary>
