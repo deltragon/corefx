@@ -4,6 +4,7 @@
 
 using System.ComponentModel.Design.Serialization;
 using System.Globalization;
+using System.Reflection;
 
 namespace System.ComponentModel
 {
@@ -128,6 +129,29 @@ namespace System.ComponentModel
                 }
 
                 return dt.ToString(format, CultureInfo.CurrentCulture);
+            }
+            if (destinationType == typeof(InstanceDescriptor) && value is DateTime) {
+                DateTime dt = (DateTime)value;
+
+                if (dt.Ticks == 0) {
+                    // Make a special case for the empty DateTime
+                    //
+                    ConstructorInfo ctr = typeof(DateTime).GetConstructor(new Type[] {typeof(Int64)});
+
+                    if (ctr != null) {
+                        return new InstanceDescriptor(ctr, new object[] {
+                            dt.Ticks });
+                    }
+                }
+
+                ConstructorInfo ctor = typeof(DateTime).GetConstructor(new Type[] {
+                    typeof(int), typeof(int), typeof(int), typeof(int),
+                    typeof(int), typeof(int), typeof(int)});
+
+                if (ctor != null) {
+                    return new InstanceDescriptor(ctor, new object[] {
+                        dt.Year, dt.Month, dt.Day, dt.Hour, dt.Minute, dt.Second, dt.Millisecond});
+                }
             }
 
             return base.ConvertTo(context, culture, value, destinationType);
